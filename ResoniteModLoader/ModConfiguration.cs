@@ -1,8 +1,9 @@
 using FrooxEngine;
 using HarmonyLib;
+using ResoniteModLoader.JsonConverters;
+using ResoniteModLoader.Utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using ResoniteModLoader.JsonConverters;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -61,7 +62,7 @@ namespace ResoniteModLoader
     /// </summary>
     public class ModConfiguration : IModConfigurationDefinition
     {
-        private static readonly string ConfigDirectory = Path.Combine(Directory.GetCurrentDirectory(), "nml_config");
+        private static readonly string ConfigDirectory = Path.Combine(PlatformHelper.MainDirectory, "nml_config");
         private static readonly JsonSerializer jsonSerializer = CreateJsonSerializer();
         private static readonly string VALUES_JSON_KEY = "values";
         private static readonly string VERSION_JSON_KEY = "version";
