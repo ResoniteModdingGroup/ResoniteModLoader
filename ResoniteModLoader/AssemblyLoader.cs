@@ -4,10 +4,33 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	internal static class AssemblyLoader
 	{
+		internal static AssemblyFile[] LoadAssembliesFromDir(string dirName)
+		{
+			List<AssemblyFile> assemblyFiles = new();
+			if (GetAssemblyPathsFromDir(dirName) is string[] assemblyPaths)
+			{
+				foreach (string assemblyFilepath in assemblyPaths)
+				{
+					try
+					{
+						if (LoadAssembly(assemblyFilepath) is Assembly assembly)
+						{
+							assemblyFiles.Add(new AssemblyFile(assemblyFilepath, assembly));
+						}
+					}
+					catch (Exception e)
+					{
+						Logger.ErrorInternal($"Unexpected exception loading assembly from {assemblyFilepath}:\n{e}");
+					}
+				}
+			}
+			return assemblyFiles.ToArray();
+		}
+
 		private static string[]? GetAssemblyPathsFromDir(string dirName)
 		{
 			string assembliesDirectory = Path.Combine(Directory.GetCurrentDirectory(), dirName);
@@ -68,29 +91,6 @@ namespace NeosModLoader
 				return null;
 			}
 			return assembly;
-		}
-
-		internal static AssemblyFile[] LoadAssembliesFromDir(string dirName)
-		{
-			List<AssemblyFile> assemblyFiles = new();
-			if (GetAssemblyPathsFromDir(dirName) is string[] assemblyPaths)
-			{
-				foreach (string assemblyFilepath in assemblyPaths)
-				{
-					try
-					{
-						if (LoadAssembly(assemblyFilepath) is Assembly assembly)
-						{
-							assemblyFiles.Add(new AssemblyFile(assemblyFilepath, assembly));
-						}
-					}
-					catch (Exception e)
-					{
-						Logger.ErrorInternal($"Unexpected exception loading assembly from {assemblyFilepath}:\n{e}");
-					}
-				}
-			}
-			return assemblyFiles.ToArray();
 		}
 	}
 }

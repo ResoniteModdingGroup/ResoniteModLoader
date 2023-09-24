@@ -6,31 +6,37 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	/// <summary>
 	/// Contains the actual mod loader.
 	/// </summary>
 	public class ModLoader
 	{
-		internal const string VERSION_CONSTANT = "1.12.6";
 		/// <summary>
-		/// NeosModLoader's version
+		/// ResoniteModLoader's version
 		/// </summary>
 		public static readonly string VERSION = VERSION_CONSTANT;
-		private static readonly Type NEOS_MOD_TYPE = typeof(NeosMod);
-		private static readonly List<LoadedNeosMod> LoadedMods = new(); // used for mod enumeration
-		internal static readonly Dictionary<Assembly, NeosMod> AssemblyLookupMap = new(); // used for logging
-		private static readonly Dictionary<string, LoadedNeosMod> ModNameLookupMap = new(); // used for duplicate mod checking
+
+		internal const string VERSION_CONSTANT = "1.12.6";
+		internal static readonly Dictionary<Assembly, ResoniteMod> AssemblyLookupMap = new();
+		private static readonly List<LoadedResoniteMod> LoadedMods = new();
+
+		// used for mod enumeration
+		// used for logging
+		private static readonly Dictionary<string, LoadedResoniteMod> ModNameLookupMap = new();
+
+		private static readonly Type Resonite_MOD_TYPE = typeof(ResoniteMod);
+		// used for duplicate mod checking
 
 		/// <summary>
 		/// Allows reading metadata for all loaded mods
 		/// </summary>
 		/// <returns>A new list containing each loaded mod</returns>
-		public static IEnumerable<NeosModBase> Mods()
+		public static IEnumerable<ResoniteModBase> Mods()
 		{
 			return LoadedMods
-				.Select(m => (NeosModBase)m.NeosMod)
+				.Select(m => (ResoniteModBase)m.ResoniteMod)
 				.ToList();
 		}
 
@@ -62,7 +68,7 @@ namespace NeosModLoader
 			{
 				try
 				{
-					LoadedNeosMod? loaded = InitializeMod(mod);
+					LoadedResoniteMod? loaded = InitializeMod(mod);
 					if (loaded != null)
 					{
 						// if loading succeeded, then we need to register the mod
@@ -97,7 +103,7 @@ namespace NeosModLoader
 			SplashChanger.SetCustom("Hooking big fish");
 			ModConfiguration.RegisterShutdownHook(harmony);
 
-			foreach (LoadedNeosMod mod in LoadedMods)
+			foreach (LoadedResoniteMod mod in LoadedMods)
 			{
 				try
 				{
@@ -105,7 +111,7 @@ namespace NeosModLoader
 				}
 				catch (Exception e)
 				{
-					Logger.ErrorInternal($"Unexpected exception in OnEngineInit() for mod {mod.NeosMod.Name} from {mod.ModAssembly.File}:\n{e}");
+					Logger.ErrorInternal($"Unexpected exception in OnEngineInit() for mod {mod.ResoniteMod.Name} from {mod.ModAssembly.File}:\n{e}");
 				}
 			}
 
@@ -136,48 +142,29 @@ namespace NeosModLoader
 			}
 		}
 
-		/// <summary>
-		/// We have a bunch of maps and things the mod needs to be registered in. This method does all that jazz.
-		/// </summary>
-		/// <param name="mod">The successfully loaded mod to register</param>
-		private static void RegisterMod(LoadedNeosMod mod)
+		private static void HookMod(LoadedResoniteMod mod)
 		{
+			SplashChanger.SetCustom($"Starting mod [{mod.ResoniteMod.Name}/{mod.ResoniteMod.Version}]");
+			Logger.DebugFuncInternal(() => $"calling OnEngineInit() for [{mod.ResoniteMod.Name}]");
 			try
 			{
-				ModNameLookupMap.Add(mod.NeosMod.Name, mod);
+				mod.ResoniteMod.OnEngineInit();
 			}
-			catch (ArgumentException)
+			catch (Exception e)
 			{
-				LoadedNeosMod existing = ModNameLookupMap[mod.NeosMod.Name];
-				Logger.ErrorInternal($"{mod.ModAssembly.File} declares duplicate mod {mod.NeosMod.Name} already declared in {existing.ModAssembly.File}. The new mod will be ignored.");
-				return;
+				Logger.ErrorInternal($"mod {mod.ResoniteMod.Name} from {mod.ModAssembly.File} threw error from OnEngineInit():\n{e}");
 			}
-
-			LoadedMods.Add(mod);
-			AssemblyLookupMap.Add(mod.ModAssembly.Assembly, mod.NeosMod);
-			mod.NeosMod.loadedNeosMod = mod; // complete the circular reference (used to look up config)
-			mod.FinishedLoading = true; // used to signal that the mod is truly loaded
-		}
-
-		private static string TypesForOwner(Patches patches, string owner)
-		{
-			bool ownerEquals(Patch patch) => Equals(patch.owner, owner);
-			int prefixCount = patches.Prefixes.Where(ownerEquals).Count();
-			int postfixCount = patches.Postfixes.Where(ownerEquals).Count();
-			int transpilerCount = patches.Transpilers.Where(ownerEquals).Count();
-			int finalizerCount = patches.Finalizers.Where(ownerEquals).Count();
-			return $"prefix={prefixCount}; postfix={postfixCount}; transpiler={transpilerCount}; finalizer={finalizerCount}";
 		}
 
 		// loads mod class and mod config
-		private static LoadedNeosMod? InitializeMod(AssemblyFile mod)
+		private static LoadedResoniteMod? InitializeMod(AssemblyFile mod)
 		{
 			if (mod.Assembly == null)
 			{
 				return null;
 			}
 
-			Type[] modClasses = mod.Assembly.GetLoadableTypes(t => t.IsClass && !t.IsAbstract && NEOS_MOD_TYPE.IsAssignableFrom(t)).ToArray();
+			Type[] modClasses = mod.Assembly.GetLoadableTypes(t => t.IsClass && !t.IsAbstract && Resonite_MOD_TYPE.IsAssignableFrom(t)).ToArray();
 			if (modClasses.Length == 0)
 			{
 				Logger.ErrorInternal($"no mods found in {mod.File}");
@@ -191,42 +178,61 @@ namespace NeosModLoader
 			else
 			{
 				Type modClass = modClasses[0];
-				NeosMod? neosMod = null;
+				ResoniteMod? ResoniteMod = null;
 				try
 				{
-					neosMod = (NeosMod)AccessTools.CreateInstance(modClass);
+					ResoniteMod = (ResoniteMod)AccessTools.CreateInstance(modClass);
 				}
 				catch (Exception e)
 				{
 					Logger.ErrorInternal($"error instantiating mod {modClass.FullName} from {mod.File}:\n{e}");
 					return null;
 				}
-				if (neosMod == null)
+				if (ResoniteMod == null)
 				{
 					Logger.ErrorInternal($"unexpected null instantiating mod {modClass.FullName} from {mod.File}");
 					return null;
 				}
-				SplashChanger.SetCustom($"Loading configuration for [{neosMod.Name}/{neosMod.Version}]");
+				SplashChanger.SetCustom($"Loading configuration for [{ResoniteMod.Name}/{ResoniteMod.Version}]");
 
-				LoadedNeosMod loadedMod = new(neosMod, mod);
-				Logger.MsgInternal($"loaded mod [{neosMod.Name}/{neosMod.Version}] ({Path.GetFileName(mod.File)}) by {neosMod.Author} with 256hash: {mod.Sha256}");
+				LoadedResoniteMod loadedMod = new(ResoniteMod, mod);
+				Logger.MsgInternal($"loaded mod [{ResoniteMod.Name}/{ResoniteMod.Version}] ({Path.GetFileName(mod.File)}) by {ResoniteMod.Author} with 256hash: {mod.Sha256}");
 				loadedMod.ModConfiguration = ModConfiguration.LoadConfigForMod(loadedMod);
 				return loadedMod;
 			}
 		}
 
-		private static void HookMod(LoadedNeosMod mod)
+		/// <summary>
+		/// We have a bunch of maps and things the mod needs to be registered in. This method does all that jazz.
+		/// </summary>
+		/// <param name="mod">The successfully loaded mod to register</param>
+		private static void RegisterMod(LoadedResoniteMod mod)
 		{
-			SplashChanger.SetCustom($"Starting mod [{mod.NeosMod.Name}/{mod.NeosMod.Version}]");
-			Logger.DebugFuncInternal(() => $"calling OnEngineInit() for [{mod.NeosMod.Name}]");
 			try
 			{
-				mod.NeosMod.OnEngineInit();
+				ModNameLookupMap.Add(mod.ResoniteMod.Name, mod);
 			}
-			catch (Exception e)
+			catch (ArgumentException)
 			{
-				Logger.ErrorInternal($"mod {mod.NeosMod.Name} from {mod.ModAssembly.File} threw error from OnEngineInit():\n{e}");
+				LoadedResoniteMod existing = ModNameLookupMap[mod.ResoniteMod.Name];
+				Logger.ErrorInternal($"{mod.ModAssembly.File} declares duplicate mod {mod.ResoniteMod.Name} already declared in {existing.ModAssembly.File}. The new mod will be ignored.");
+				return;
 			}
+
+			LoadedMods.Add(mod);
+			AssemblyLookupMap.Add(mod.ModAssembly.Assembly, mod.ResoniteMod);
+			mod.ResoniteMod.loadedResoniteMod = mod; // complete the circular reference (used to look up config)
+			mod.FinishedLoading = true; // used to signal that the mod is truly loaded
+		}
+
+		private static string TypesForOwner(Patches patches, string owner)
+		{
+			bool ownerEquals(Patch patch) => Equals(patch.owner, owner);
+			int prefixCount = patches.Prefixes.Where(ownerEquals).Count();
+			int postfixCount = patches.Postfixes.Where(ownerEquals).Count();
+			int transpilerCount = patches.Transpilers.Where(ownerEquals).Count();
+			int finalizerCount = patches.Finalizers.Where(ownerEquals).Count();
+			return $"prefix={prefixCount}; postfix={postfixCount}; transpiler={transpilerCount}; finalizer={finalizerCount}";
 		}
 	}
 }

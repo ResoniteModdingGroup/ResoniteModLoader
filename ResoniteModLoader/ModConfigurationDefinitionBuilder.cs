@@ -4,21 +4,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	/// <summary>
 	/// Represents a fluent configuration interface to define mod configurations.
 	/// </summary>
 	public class ModConfigurationDefinitionBuilder
 	{
-		private readonly NeosModBase Owner;
-		private Version ConfigVersion = new(1, 0, 0);
 		private readonly HashSet<ModConfigurationKey> Keys = new();
+		private readonly ResoniteModBase Owner;
 		private bool AutoSaveConfig = true;
+		private Version ConfigVersion = new(1, 0, 0);
 
-		internal ModConfigurationDefinitionBuilder(NeosModBase owner)
+		internal ModConfigurationDefinitionBuilder(ResoniteModBase owner)
 		{
 			Owner = owner;
+		}
+
+		/// <summary>
+		/// Sets the AutoSave property of this configuration definition. Default is <c>true</c>.
+		/// </summary>
+		/// <param name="autoSave">If <c>false</c>, the config will not be autosaved on Resonite close.</param>
+		/// <returns>This builder.</returns>
+		public ModConfigurationDefinitionBuilder AutoSave(bool autoSave)
+		{
+			AutoSaveConfig = autoSave;
+			return this;
+		}
+
+		/// <summary>
+		/// Adds a new key to this configuration definition.
+		/// </summary>
+		/// <param name="key">A configuration key.</param>
+		/// <returns>This builder.</returns>
+		public ModConfigurationDefinitionBuilder Key(ModConfigurationKey key)
+		{
+			Keys.Add(key);
+			return this;
 		}
 
 		/// <summary>
@@ -43,26 +65,13 @@ namespace NeosModLoader
 			return this;
 		}
 
-		/// <summary>
-		/// Adds a new key to this configuration definition.
-		/// </summary>
-		/// <param name="key">A configuration key.</param>
-		/// <returns>This builder.</returns>
-		public ModConfigurationDefinitionBuilder Key(ModConfigurationKey key)
+		internal ModConfigurationDefinition? Build()
 		{
-			Keys.Add(key);
-			return this;
-		}
-
-		/// <summary>
-		/// Sets the AutoSave property of this configuration definition. Default is <c>true</c>.
-		/// </summary>
-		/// <param name="autoSave">If <c>false</c>, the config will not be autosaved on Neos close.</param>
-		/// <returns>This builder.</returns>
-		public ModConfigurationDefinitionBuilder AutoSave(bool autoSave)
-		{
-			AutoSaveConfig = autoSave;
-			return this;
+			if (Keys.Count > 0)
+			{
+				return new ModConfigurationDefinition(Owner, ConfigVersion, Keys, AutoSaveConfig);
+			}
+			return null;
 		}
 
 		internal void ProcessAttributes()
@@ -84,15 +93,6 @@ namespace NeosModLoader
 
 			ModConfigurationKey fieldValue = (ModConfigurationKey)field.GetValue(field.IsStatic ? null : Owner);
 			Keys.Add(fieldValue);
-		}
-
-		internal ModConfigurationDefinition? Build()
-		{
-			if (Keys.Count > 0)
-			{
-				return new ModConfigurationDefinition(Owner, ConfigVersion, Keys, AutoSaveConfig);
-			}
-			return null;
 		}
 	}
 }

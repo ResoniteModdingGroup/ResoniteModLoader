@@ -1,4 +1,4 @@
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	/// <summary>
 	/// Represents the data for the <see cref="ModConfiguration.OnThisConfigurationChanged"/> and <see cref="ModConfiguration.OnAnyConfigurationChanged"/> events.

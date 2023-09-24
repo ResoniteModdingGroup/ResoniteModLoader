@@ -1,18 +1,31 @@
 using System;
 using System.Collections.Generic;
 
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	/// <summary>
 	/// Contains members that only the <see cref="ModLoader"/> or the Mod itself are intended to access.
 	/// </summary>
-	public abstract class NeosMod : NeosModBase
+	public abstract class ResoniteMod : ResoniteModBase
 	{
 		/// <summary>
-		/// Gets whether debug logging is enabled.
+		/// Logs the given message as a line in the log if debug logging is enabled. Prefer <see cref="DebugFunc(Func{object})"/> or <see cref="Debug(object)"/>.
 		/// </summary>
-		/// <returns><c>true</c> if debug logging is enabled.</returns>
-		public static bool IsDebugEnabled() => Logger.IsDebugEnabled();
+		/// <param name="message">The message to log.</param>
+		public static void Debug(string message) => Logger.DebugExternal(message);
+
+		/// <summary>
+		/// Logs the given object as a line in the log if debug logging is enabled.
+		/// </summary>
+		/// <param name="message">The object to log.</param>
+		public static void Debug(object message) => Logger.DebugExternal(message);
+
+		// needed for binary compatibility (REMOVE IN NEXT MAJOR VERSION)
+		/// <summary>
+		/// Logs the given objects as lines in the log if debug logging is enabled.
+		/// </summary>
+		/// <param name="messages">The objects to log.</param>
+		public static void Debug(params object[] messages) => Logger.DebugListExternal(messages);
 
 		/// <summary>
 		/// Logs an object as a line in the log based on the value produced by the given function if debug logging is enabled..
@@ -24,23 +37,29 @@ namespace NeosModLoader
 		public static void DebugFunc(Func<object> messageProducer) => Logger.DebugFuncExternal(messageProducer);
 
 		/// <summary>
-		/// Logs the given message as a line in the log if debug logging is enabled. Prefer <see cref="DebugFunc(Func{object})"/> or <see cref="Debug(object)"/>.
+		/// Logs the given message as an error line in the log. Prefer <see cref="Error(object)"/>.
 		/// </summary>
 		/// <param name="message">The message to log.</param>
-		public static void Debug(string message) => Logger.DebugExternal(message); // needed for binary compatibility (REMOVE IN NEXT MAJOR VERSION)
+		public static void Error(string message) => Logger.ErrorExternal(message);
 
 		/// <summary>
-		/// Logs the given object as a line in the log if debug logging is enabled.
+		/// Logs the given object as an error line in the log.
 		/// </summary>
 		/// <param name="message">The object to log.</param>
-		public static void Debug(object message) => Logger.DebugExternal(message);
+		public static void Error(object message) => Logger.ErrorExternal(message);
 
+		// needed for binary compatibility (REMOVE IN NEXT MAJOR VERSION)
 		/// <summary>
-		/// Logs the given objects as lines in the log if debug logging is enabled.
+		/// Logs the given objects as error lines in the log.
 		/// </summary>
 		/// <param name="messages">The objects to log.</param>
-		public static void Debug(params object[] messages) => Logger.DebugListExternal(messages);
+		public static void Error(params object[] messages) => Logger.ErrorListExternal(messages);
 
+		/// <summary>
+		/// Gets whether debug logging is enabled.
+		/// </summary>
+		/// <returns><c>true</c> if debug logging is enabled.</returns>
+		public static bool IsDebugEnabled() => Logger.IsDebugEnabled();
 
 		/// <summary>
 		/// Logs the given message as a regular line in the log. Prefer <see cref="Msg(object)"/>.
@@ -60,7 +79,6 @@ namespace NeosModLoader
 		/// <param name="messages">The objects to log.</param>
 		public static void Msg(params object[] messages) => Logger.MsgListExternal(messages);
 
-
 		/// <summary>
 		/// Logs the given message as a warning line in the log. Prefer <see cref="Warn(object)"/>.
 		/// </summary>
@@ -79,52 +97,6 @@ namespace NeosModLoader
 		/// <param name="messages">The objects to log.</param>
 		public static void Warn(params object[] messages) => Logger.WarnListExternal(messages);
 
-
-		/// <summary>
-		/// Logs the given message as an error line in the log. Prefer <see cref="Error(object)"/>.
-		/// </summary>
-		/// <param name="message">The message to log.</param>
-		public static void Error(string message) => Logger.ErrorExternal(message); // needed for binary compatibility (REMOVE IN NEXT MAJOR VERSION)
-
-		/// <summary>
-		/// Logs the given object as an error line in the log.
-		/// </summary>
-		/// <param name="message">The object to log.</param>
-		public static void Error(object message) => Logger.ErrorExternal(message);
-
-		/// <summary>
-		/// Logs the given objects as error lines in the log.
-		/// </summary>
-		/// <param name="messages">The objects to log.</param>
-		public static void Error(params object[] messages) => Logger.ErrorListExternal(messages);
-
-		/// <summary>
-		/// Called once immediately after NeosModLoader begins execution
-		/// </summary>
-		public virtual void OnEngineInit() { }
-
-		/// <summary>
-		/// Build the defined configuration for this mod.
-		/// </summary>
-		/// <returns>This mod's configuration definition.</returns>
-		internal ModConfigurationDefinition? BuildConfigurationDefinition()
-		{
-			ModConfigurationDefinitionBuilder builder = new(this);
-			builder.ProcessAttributes();
-			DefineConfiguration(builder);
-			return builder.Build();
-		}
-
-		/// <summary>
-		/// Get the defined configuration for this mod. This should be overridden by your mod if necessary.
-		/// </summary>
-		/// <returns>This mod's configuration definition. calls DefineConfiguration(ModConfigurationDefinitionBuilder) by default.</returns>
-		[Obsolete("This method is obsolete. Use DefineConfiguration(ModConfigurationDefinitionBuilder) instead.")] // REMOVE IN NEXT MAJOR VERSION
-		public virtual ModConfigurationDefinition? GetConfigurationDefinition()
-		{
-			return BuildConfigurationDefinition();
-		}
-
 		/// <summary>
 		/// Create a configuration definition for this mod.
 		/// </summary>
@@ -142,7 +114,7 @@ namespace NeosModLoader
 		/// </summary>
 		/// <param name="version">The semantic version of the configuration definition</param>
 		/// <param name="configurationItemDefinitions">A list of configuration items</param>
-		/// <param name="autoSave">If false, the config will not be autosaved on Neos close</param>
+		/// <param name="autoSave">If false, the config will not be autosaved on Resonite close</param>
 		/// <returns></returns>
 		[Obsolete("This method is obsolete. Use DefineConfiguration(ModConfigurationDefinitionBuilder) instead.")] // REMOVE IN NEXT MAJOR VERSION
 		public ModConfigurationDefinition DefineConfiguration(Version version, IEnumerable<ModConfigurationKey> configurationItemDefinitions, bool autoSave = true)
@@ -169,6 +141,16 @@ namespace NeosModLoader
 		}
 
 		/// <summary>
+		/// Get the defined configuration for this mod. This should be overridden by your mod if necessary.
+		/// </summary>
+		/// <returns>This mod's configuration definition. calls DefineConfiguration(ModConfigurationDefinitionBuilder) by default.</returns>
+		[Obsolete("This method is obsolete. Use DefineConfiguration(ModConfigurationDefinitionBuilder) instead.")] // REMOVE IN NEXT MAJOR VERSION
+		public virtual ModConfigurationDefinition? GetConfigurationDefinition()
+		{
+			return BuildConfigurationDefinition();
+		}
+
+		/// <summary>
 		/// Defines handling of incompatible configuration versions
 		/// </summary>
 		/// <param name="serializedVersion">Configuration version read from the config file</param>
@@ -177,6 +159,24 @@ namespace NeosModLoader
 		public virtual IncompatibleConfigurationHandlingOption HandleIncompatibleConfigurationVersions(Version serializedVersion, Version definedVersion)
 		{
 			return IncompatibleConfigurationHandlingOption.ERROR;
+		}
+
+		/// <summary>
+		/// Called once immediately after ResoniteModLoader begins execution
+		/// </summary>
+		public virtual void OnEngineInit()
+		{ }
+
+		/// <summary>
+		/// Build the defined configuration for this mod.
+		/// </summary>
+		/// <returns>This mod's configuration definition.</returns>
+		internal ModConfigurationDefinition? BuildConfigurationDefinition()
+		{
+			ModConfigurationDefinitionBuilder builder = new(this);
+			builder.ProcessAttributes();
+			DefineConfiguration(builder);
+			return builder.Build();
 		}
 	}
 }

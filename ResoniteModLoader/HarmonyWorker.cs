@@ -2,7 +2,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	// this class does all the harmony-related NML work.
 	// this is needed to avoid importing harmony in ExecutionHook, where it may not be loaded yet.
@@ -10,9 +10,9 @@ namespace NeosModLoader
 	{
 		internal static void LoadModsAndHideModAssemblies(HashSet<Assembly> initialAssemblies)
 		{
-			Harmony harmony = new("com.neosmodloader");
+			Harmony harmony = new("com.Resonitemodloader");
 			ModLoader.LoadMods(harmony);
-			AssemblyHider.PatchNeos(harmony, initialAssemblies);
+			AssemblyHider.PatchResonite(harmony, initialAssemblies);
 		}
 	}
 }

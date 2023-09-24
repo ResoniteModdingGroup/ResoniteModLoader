@@ -1,18 +1,14 @@
 using System;
 using System.Reflection;
 
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	internal class AssemblyFile
 	{
-		internal string File { get; }
-		internal Assembly Assembly { get; set; }
-		internal AssemblyFile(string file, Assembly assembly)
-		{
-			File = file;
-			Assembly = assembly;
-		}
 		private string? sha256;
+		internal Assembly Assembly { get; set; }
+		internal string File { get; }
+
 		internal string Sha256
 		{
 			get
@@ -31,6 +27,12 @@ namespace NeosModLoader
 				}
 				return sha256;
 			}
+		}
+
+		internal AssemblyFile(string file, Assembly assembly)
+		{
+			File = file;
+			Assembly = assembly;
 		}
 	}
 }

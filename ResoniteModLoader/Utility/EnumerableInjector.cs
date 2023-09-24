@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NeosModLoader.Utility
+namespace ResoniteModLoader.Utility
 {
 	/// <summary>
 	/// Provides the ability to inject actions into the execution of an enumeration while transforming it.<br/><br/>

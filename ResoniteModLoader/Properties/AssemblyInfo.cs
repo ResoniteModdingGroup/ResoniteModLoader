@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NeosModLoader")]
+[assembly: AssemblyTitle("ResoniteModLoader")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NeosModLoader")]
+[assembly: AssemblyProduct("ResoniteModLoader")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -32,8 +32,8 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(NeosModLoader.ModLoader.VERSION_CONSTANT)]
-[assembly: AssemblyFileVersion(NeosModLoader.ModLoader.VERSION_CONSTANT)]
+[assembly: AssemblyVersion(ResoniteModLoader.ModLoader.VERSION_CONSTANT)]
+[assembly: AssemblyFileVersion(ResoniteModLoader.ModLoader.VERSION_CONSTANT)]
 
 // prevent PostX from modifying my assembly, as it doesn't need anything done to it
 // this keeps PostX from overwriting my AssemblyVersionAttribute

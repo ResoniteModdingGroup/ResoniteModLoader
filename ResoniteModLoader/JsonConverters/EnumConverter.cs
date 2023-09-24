@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System;
 
-namespace NeosModLoader.JsonConverters
+namespace ResoniteModLoader.JsonConverters
 {
 	// serializes and deserializes enums as strings
 	internal class EnumConverter : JsonConverter

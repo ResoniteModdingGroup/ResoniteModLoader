@@ -2,13 +2,31 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace NeosModLoader
+namespace ResoniteModLoader
 {
 	internal class ModLoaderConfiguration
 	{
-		private static readonly string CONFIG_FILENAME = "NeosModLoader.config";
+		private static readonly string CONFIG_FILENAME = "ResoniteModLoader.config";
 
 		private static ModLoaderConfiguration? _configuration;
+
+		public bool AdvertiseVersion { get; private set; } = false;
+
+		public bool Debug { get; private set; } = false;
+
+		public bool HideLateTypes { get; private set; } = true;
+
+		public bool HideModTypes { get; private set; } = true;
+
+		public bool HideVisuals { get; private set; } = false;
+
+		public bool LogConflicts { get; private set; } = true;
+
+		public bool NoLibraries { get; private set; } = false;
+
+		public bool NoMods { get; private set; } = false;
+
+		public bool Unsafe { get; private set; } = false;
 
 		internal static ModLoaderConfiguration Get()
 		{
@@ -96,15 +114,5 @@ namespace NeosModLoader
 			string path = Uri.UnescapeDataString(uri.Path);
 			return Path.GetDirectoryName(path);
 		}
-
-		public bool Unsafe { get; private set; } = false;
-		public bool Debug { get; private set; } = false;
-		public bool HideVisuals { get; private set; } = false;
-		public bool NoMods { get; private set; } = false;
-		public bool NoLibraries { get; private set; } = false;
-		public bool AdvertiseVersion { get; private set; } = false;
-		public bool LogConflicts { get; private set; } = true;
-		public bool HideModTypes { get; private set; } = true;
-		public bool HideLateTypes { get; private set; } = true;
 	}
 }
